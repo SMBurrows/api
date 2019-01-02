@@ -1,9 +1,15 @@
-import Deployment from '../src/Deployment';
-import Backend from '../src/Deployment/Backend';
-import Provider from '../src/Deployment/Provider';
-import Api from '../src/Deployment/Api';
-import Resource from '../src/Deployment/Resource';
+import Provider from '../src/Provider';
+import Backend from '../src/Backend';
+import Project from '../src/Project';
+import Namespace from '../src/Namespace';
+import DeploymentConfig from '../src/DeploymentConfig';
+import Resource from '../src/Resource';
 
 export default {
-  Deployment, Backend, Provider, Api, Resource,
+  Provider,
+  Backend,
+  Project,
+  Namespace,
+  DeploymentConfig,
+  Resource,
 };

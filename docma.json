@@ -63,14 +63,14 @@
             "items": [
               {
                 "label": "API",
-                "href": "https://github.com/ricsam/tfinjs"
+                "href": "https://github.com/tfinjs/api"
               },
               {
                 "separator": true
               },
               {
                 "label": "CLI",
-                "href": "https://github.com/ricsam/tfinjs-cli"
+                "href": "https://github.com/tfinjs/cli"
               }
             ]
           }

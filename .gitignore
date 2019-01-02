@@ -3,6 +3,8 @@ dist
 docs
 jsdocs
 
+# build directories
 uris
 main
 utils
+helpers
