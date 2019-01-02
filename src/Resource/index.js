@@ -1,4 +1,6 @@
 import assert from 'assert';
+import camelCase from 'lodash/camelCase';
+import set from 'lodash/set';
 import JsToHcl from '../JsToHcl';
 import requiredParam from '../statics/requiredParam';
 import md5 from '../statics/md5';
@@ -6,6 +8,9 @@ import throwError from '../statics/throwError';
 import DeploymentConfig from '../DeploymentConfig';
 import createTerraformStringInterpolation from '../statics/createTerraformStringInterpolation';
 import resourceExistsInList from '../statics/resourceExistsInList';
+import uuid from '../statics/uuid';
+
+const hooks = ['deployHook', 'serializingHook'];
 
 /**
  * Creates an instance of Resource.
@@ -31,6 +36,33 @@ class Resource {
     assert(typeof name === 'string', 'name must be string');
     assert(typeof body === 'object', 'name must be object');
 
+    const makeAddHook = (hookName) => (hook) => {
+      const id = uuid();
+      this[hookName][id] = hook;
+      return id;
+    };
+    const makeRemoveHook = (hookName) => (id) => {
+      delete this[hookName][id];
+      return id;
+    };
+
+    hooks.forEach((hookName) => {
+      const preHookName = camelCase(`pre_${hookName}s`);
+      const postHookName = camelCase(`post_${hookName}s`);
+      this[preHookName] = [];
+      this[postHookName] = [];
+
+      const addPreHookName = camelCase(`add_pre_${hookName}`);
+      const addPostHookName = camelCase(`add_post_${hookName}`);
+      const removePreHookName = camelCase(`remove_pre_${hookName}`);
+      const removePostHookName = camelCase(`remove_post_${hookName}`);
+
+      this[addPreHookName] = makeAddHook(preHookName);
+      this[addPostHookName] = makeAddHook(postHookName);
+      this[removePreHookName] = makeRemoveHook(preHookName);
+      this[removePostHookName] = makeRemoveHook(postHookName);
+    });
+
     this.type = type;
     this.name = name;
 
@@ -49,6 +81,17 @@ class Resource {
    */
   getBody() {
     return this.body;
+  }
+
+  /**
+   * Update a key in the hcl body
+   *
+   * @param {string} key
+   * @param {body} val
+   * @memberof Resource
+   */
+  updateBody(key, val) {
+    set(this.body, key, this.parseValue(val));
   }
 
   /**
@@ -193,6 +236,10 @@ class Resource {
     }
   }
 
+  callHooks(key) {
+    Object.entries(this[key]).forEach(([id, hook]) => hook(this, id));
+  }
+
   /**
    * Generates the HCL content of the resource (with remote states)
    *
@@ -200,6 +247,8 @@ class Resource {
    * @memberof Resource
    */
   getHcl() {
+    this.callHooks('preSerializingHooks');
+
     const converter = new JsToHcl();
     const resourceHcl = `resource "${this.type}" "${
       this.name
@@ -208,7 +257,9 @@ class Resource {
     const remoteDataSourcesHcl = this.remoteStates
       .map((resource) => {
         const versionedName = resource.versionedName();
-        return resource.deploymentConfig.namespace.project.backend.getDataConfig(versionedName);
+        return resource.deploymentConfig.namespace.project.backend.getDataConfig(
+          versionedName,
+        );
       })
       .join('\n');
 
@@ -227,6 +278,9 @@ class Resource {
     const backendHcl = this.deploymentConfig.namespace.project.backend.getBackendHcl(
       this.versionedName(),
     );
+
+    this.callHooks('postSerializingHooks');
+
     return [
       providerHcl,
       backendHcl,
@@ -234,6 +288,14 @@ class Resource {
       remoteDataSourcesHcl,
       outputs,
     ].join('\n');
+  }
+
+  deploy() {
+    this.callHooks('preDeployHooks');
+  }
+
+  didDeploy() {
+    this.callHooks('postDeployHooks');
   }
 }
 

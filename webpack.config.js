@@ -14,7 +14,9 @@ module.exports = {
     libraryExport: 'default',
     libraryTarget: 'commonjs2',
   },
-  externals: nodeExternals(),
+  externals: nodeExternals({
+    whitelist: ['lodash/camelCase', 'lodash/set'],
+  }),
   module: {
     rules: [
       {

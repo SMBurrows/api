@@ -23,7 +23,8 @@
   },
   "homepage": "https://tfinjs.com",
   "dependencies": {
-    "@babel/plugin-transform-instanceof": "^7.2.0"
+    "@babel/plugin-transform-instanceof": "^7.2.0",
+    "lodash": "^4.17.11"
   },
   "devDependencies": {
     "@babel/core": "^7.1.6",

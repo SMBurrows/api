@@ -3,7 +3,7 @@ import hclPrettify from '../src/statics/hclPrettify';
 import md5 from '../src/statics/md5';
 import requiredParam from '../src/statics/requiredParam';
 import throwError from '../src/statics/throwError';
-
+import uuid from '../src/statics/uuid';
 
 export default {
   JsToHcl,
@@ -11,4 +11,5 @@ export default {
   md5,
   requiredParam,
   throwError,
+  uuid,
 };
