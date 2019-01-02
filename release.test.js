@@ -1,17 +1,16 @@
-import { join } from 'path';
-import Project from '../Project';
-import Backend from '../Backend';
-import Provider from '../Provider';
-import awsProviderUri from '../Provider/uris/aws';
-import Resource from '../Resource';
-import Namespace from '../Namespace';
-import DeploymentConfig from '../DeploymentConfig';
-import { versionedName } from '../helpers';
-import saveProject from './saveProject';
-
 /* eslint-env jest */
+import {
+  Backend,
+  Provider,
+  Resource,
+  Project,
+  Namespace,
+  DeploymentConfig,
+  versionedName,
+} from './main';
+import awsProviderUri from './uris/aws';
 
-test('integration', async () => {
+test('integration test on the release', () => {
   const backendBucketName = 'some-backend-bucket';
   const backendBucketRegion = 'eu-north-1';
   const awsAccoundId = '13371337';
@@ -71,6 +70,4 @@ test('integration', async () => {
     write_capacity: 20,
     hash_key: 'CustomerId',
   });
-  await saveProject(project, join(__dirname, 'integration.test.out'));
-
 });
