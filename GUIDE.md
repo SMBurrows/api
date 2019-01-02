@@ -76,8 +76,8 @@ const backend = new Backend('s3', {
     },
     awsProviderUri(awsAccoundId, backendBucketRegion),
   ),
-  create: (resource) =>
-    resource('aws_s3_bucket', 'terraform_state_prod', {
+  create: (deploymentConfig) =>
+    new Resource(deploymentConfig, 'aws_s3_bucket', 'terraform_state_prod', {
       bucket: backendBucketName,
       acl: 'private',
       versioning: {

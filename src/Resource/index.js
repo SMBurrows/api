@@ -23,7 +23,10 @@ class Resource {
     name = requiredParam('name'),
     body = requiredParam('body'),
   ) {
-    assert(deploymentConfig instanceof DeploymentConfig, 'deploymentConfig must be an instance of DeploymentConfig');
+    assert(
+      deploymentConfig instanceof DeploymentConfig,
+      'deploymentConfig must be an instance of DeploymentConfig',
+    );
     assert(typeof type === 'string', 'type must be string');
     assert(typeof name === 'string', 'name must be string');
     assert(typeof body === 'object', 'name must be object');
@@ -34,6 +37,8 @@ class Resource {
     this.deploymentConfig = deploymentConfig;
 
     this.body = this.parseValue(body);
+
+    this.deploymentConfig.namespace.project.addResource(this);
   }
 
   /**
@@ -126,7 +131,8 @@ class Resource {
     /* must depend on these 7 parameters */
     const uri = this.getUri();
 
-    const normalizeProjectName = this.deploymentConfig.namespace.project.getValue()
+    const normalizeProjectName = this.deploymentConfig.namespace.project
+      .getValue()
       .slice(0, 19)
       .replace(/[^A-Za-z0-9]/g, '')
       .toLowerCase();
@@ -202,7 +208,7 @@ class Resource {
     const remoteDataSourcesHcl = this.remoteStates
       .map((resource) => {
         const versionedName = resource.versionedName();
-        return resource.api.deployment.backend.getDataConfig(versionedName);
+        return resource.deploymentConfig.namespace.project.backend.getDataConfig(versionedName);
       })
       .join('\n');
 
@@ -217,8 +223,8 @@ class Resource {
       )
       .join('\n');
 
-    const providerHcl = this.api.provider.getHcl();
-    const backendHcl = this.api.deployment.backend.getBackendHcl(
+    const providerHcl = this.deploymentConfig.provider.getHcl();
+    const backendHcl = this.deploymentConfig.namespace.project.backend.getBackendHcl(
       this.versionedName(),
     );
     return [

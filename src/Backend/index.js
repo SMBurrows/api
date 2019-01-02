@@ -3,6 +3,8 @@ import throwError from '../statics/throwError';
 import JsToHcl from '../JsToHcl';
 import requiredParam from '../statics/requiredParam';
 import Provider from '../Provider';
+import DeploymentConfig from '../DeploymentConfig';
+import Resource from '../Resource';
 
 /**
  * Creates an instance of Backend.
@@ -56,7 +58,7 @@ class Backend {
     this.dataConfig = dataConfig;
 
     this.provider = provider;
-    this.create = create;
+    this.privateCreate = create;
   }
 
   /**
@@ -85,8 +87,17 @@ class Backend {
    * @returns {function} create - The create function optionally provided to the contructor
    * @memberof Backend
    */
-  getCreate() {
-    return this.create;
+  create(deploymentConfig) {
+    assert(
+      deploymentConfig instanceof DeploymentConfig,
+      'deploymentConfig must be an instance of DeploymentConfig',
+    );
+    const result = this.privateCreate(deploymentConfig);
+    assert(
+      result instanceof Resource,
+      'You must return an instance of Resource',
+    );
+    return result;
   }
 
   /**
