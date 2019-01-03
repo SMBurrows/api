@@ -71,6 +71,20 @@
               {
                 "label": "CLI",
                 "href": "https://github.com/tfinjs/cli"
+              },
+              {
+                "separator": true
+              },
+              {
+                "label": "AWS lambda resource",
+                "href": "https://github.com/tfinjs/aws-lambda"
+              },
+              {
+                "separator": true
+              },
+              {
+                "label": "AWS lambda packager",
+                "href": "https://github.com/tfinjs/aws-lambda-packager"
               }
             ]
           }

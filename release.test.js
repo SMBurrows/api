@@ -1,4 +1,5 @@
 /* eslint-env jest */
+import { resolve } from 'path';
 import {
   Backend,
   Provider,
@@ -46,7 +47,7 @@ test('integration test on the release', () => {
       }),
   });
 
-  const project = new Project('pet-shop', backend);
+  const project = new Project('pet-shop', backend, resolve(__dirname, '.dist'));
 
   const namespace = new Namespace(project, 'customers');
 

@@ -17,6 +17,8 @@ class Project {
       'Dist must be a string and an absolute path pointing the the dist folder for tfinjs',
     );
 
+    assert(fs.writeFileSync && fs.readFileSync && fs.mkdir && fs.stat, 'fileSystem must be implemented as the node fs module');
+
     this.project = project;
     this.backend = backend;
     this.dist = dist;

@@ -78,6 +78,46 @@ class Resource {
   }
 
   /**
+   * Gets backend
+   *
+   * @returns {backend} backend
+   * @memberof Resource
+   */
+  getBackend() {
+    return this.getProject().backend;
+  }
+
+  /**
+   * Gets project
+   *
+   * @returns {project} project
+   * @memberof Resource
+   */
+  getProject() {
+    return this.getNamespace().project;
+  }
+
+  /**
+   * Gets namespace
+   *
+   * @returns {namespace} namespace
+   * @memberof Resource
+   */
+  getNamespace() {
+    return this.getDeploymentConfig().namespace;
+  }
+
+  /**
+   * Gets deploymentConfig
+   *
+   * @returns {deploymentConfig} deploymentConfig
+   * @memberof Resource
+   */
+  getDeploymentConfig() {
+    return this.deploymentConfig;
+  }
+
+  /**
    * Gets the resource body
    *
    * @param {string|number=} key
