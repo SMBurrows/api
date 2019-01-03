@@ -1,15 +1,18 @@
 /* eslint-env jest */
+/* eslint-disable import/no-extraneous-dependencies */
 import { writeFileSync, readFileSync, existsSync } from 'fs';
 import { mkdirpSync } from 'fs-extra';
 import { dirname } from 'path';
 
-const snapshot = (outFile, content, newSnapshot) => {
-  mkdirpSync(dirname(outFile));
+const snapshot = (referenceFile, outFile, newSnapshot) => {
+  mkdirpSync(dirname(referenceFile));
 
-  if (newSnapshot || !existsSync(outFile)) {
-    writeFileSync(outFile, content);
+  if (newSnapshot || !existsSync(referenceFile)) {
+    writeFileSync(referenceFile, readFileSync(outFile));
   }
 
-  expect(readFileSync(outFile).toString()).toBe(content);
+  expect(readFileSync(referenceFile, 'utf8').toString()).toBe(
+    readFileSync(outFile, 'utf8').toString(),
+  );
 };
 export default snapshot;

@@ -12,6 +12,7 @@ const awsProviderUri = (accountId, region) => `aws/${accountId}/${region}`;
 
 /* eslint-env jest */
 test('The lambda deployment example test', async () => {
+  const dist = join(__dirname, 'io/LambdaDeployment.test.out');
   const backend = new Backend('s3', {
     backendConfig: (name) => ({
       bucket: 'terraform-state-prod',
@@ -28,7 +29,7 @@ test('The lambda deployment example test', async () => {
   const awsAccoundId = '133713371337';
   const awsRegion = 'eu-north-1';
 
-  const project = new Project('pet-shop', backend);
+  const project = new Project('pet-shop', backend, dist);
 
   const namespace = new Namespace(project, 'services/lambdas/add-pet');
 
@@ -130,5 +131,9 @@ test('The lambda deployment example test', async () => {
     },
   );
 
-  await saveProject(project, join(__dirname, 'LambdaDeployment.test.out'));
+  await saveProject(
+    project,
+    join(__dirname, 'io/LambdaDeployment.test.ref'),
+    dist,
+  );
 });

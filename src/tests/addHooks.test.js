@@ -12,6 +12,7 @@ import saveProject from './saveProject';
 /* eslint-env jest */
 
 test('addHooks', async () => {
+  const dist = join(__dirname, 'io/addHooks.test.out');
   const backendBucketName = 'some-backend-bucket';
   const backendBucketRegion = 'eu-north-1';
   const awsAccoundId = '13371337';
@@ -47,7 +48,7 @@ test('addHooks', async () => {
       }),
   });
 
-  const project = new Project('pet-shop', backend);
+  const project = new Project('pet-shop', backend, dist);
 
   const namespace = new Namespace(project, 'customers');
 
@@ -74,5 +75,5 @@ test('addHooks', async () => {
   table.addPreSerializingHook((r) => {
     r.updateBody('read_capacity', 40);
   });
-  await saveProject(project, join(__dirname, 'addHooks.test.out'));
+  await saveProject(project, join(__dirname, 'io/addHooks.test.ref'), dist);
 });

@@ -1,5 +1,5 @@
 /* eslint-env jest */
-import { join } from 'path';
+import { resolve } from 'path';
 import awsProviderUri from '../Provider/uris/aws';
 import Provider from '../Provider';
 import Backend from '../Backend';
@@ -11,6 +11,7 @@ import Resource from '../Resource';
 import { reference, versionedName } from '../helpers';
 
 test('simpleResources', async () => {
+  const dist = resolve(__dirname, 'io/simpleResources.test.out');
   const awsAccoundId = 13371337;
   const awsRegion = 'eu-north-1';
   const backendBucketName = 'terraform-state-prod';
@@ -47,7 +48,7 @@ test('simpleResources', async () => {
       }),
   });
 
-  const project = new Project('pet-shop', backend);
+  const project = new Project('pet-shop', backend, dist);
 
   const provider = new Provider(
     'aws',
@@ -140,5 +141,5 @@ test('simpleResources', async () => {
       policy_arn: reference(cloudwatchPolicy, 'arn'),
     },
   );
-  await saveProject(project, join(__dirname, 'simpleResources.test.out'));
+  await saveProject(project, resolve(__dirname, 'io/simpleResources.test.ref'), dist);
 });

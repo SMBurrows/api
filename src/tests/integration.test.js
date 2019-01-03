@@ -15,6 +15,7 @@ test('integration', async () => {
   const backendBucketName = 'some-backend-bucket';
   const backendBucketRegion = 'eu-north-1';
   const awsAccoundId = '13371337';
+  const dist = join(__dirname, 'io/integration.test.out');
 
   const backend = new Backend('s3', {
     backendConfig: (name) => ({
@@ -47,7 +48,7 @@ test('integration', async () => {
       }),
   });
 
-  const project = new Project('pet-shop', backend);
+  const project = new Project('pet-shop', backend, dist);
 
   const namespace = new Namespace(project, 'customers');
 
@@ -71,6 +72,5 @@ test('integration', async () => {
     write_capacity: 20,
     hash_key: 'CustomerId',
   });
-  await saveProject(project, join(__dirname, 'integration.test.out'));
-
+  await saveProject(project, join(__dirname, 'io/integration.test.ref'), dist);
 });

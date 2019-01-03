@@ -1,6 +1,6 @@
 {
   "name": "@tfinjs/api",
-  "version": "0.0.4-beta",
+  "version": "0.0.5-beta",
   "description": "",
   "main": "./main/index.js",
   "scripts": {
@@ -24,7 +24,8 @@
   "homepage": "https://tfinjs.com",
   "dependencies": {
     "@babel/plugin-transform-instanceof": "^7.2.0",
-    "lodash": "^4.17.11"
+    "lodash": "^4.17.11",
+    "mkdirp": "^0.5.1"
   },
   "devDependencies": {
     "@babel/core": "^7.1.6",

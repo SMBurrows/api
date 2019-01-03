@@ -1,4 +1,6 @@
+import fs from 'fs';
 import assert from 'assert';
+import { isAbsolute } from 'path';
 import Backend from '../Backend';
 import requiredParam from '../statics/requiredParam';
 import Resource from '../Resource';
@@ -7,17 +9,27 @@ import DeploymentConfig from '../DeploymentConfig';
 import Namespace from '../Namespace';
 
 class Project {
-  constructor(project, backend) {
+  constructor(project, backend, dist, fileStystem = fs) {
     assert(typeof project === 'string', 'project must be a string');
     assert(backend instanceof Backend, 'backend must be instance of Backend');
+    assert(
+      typeof dist === 'string' && isAbsolute(dist),
+      'Dist must be a string and an absolute path pointing the the dist folder for tfinjs',
+    );
+
     this.project = project;
     this.backend = backend;
+    this.dist = dist;
+    this.fs = fileStystem;
 
     if (this.backend.shouldCreateBackend()) {
       /* create dummy deployment and api where the backend can be created */
       const backendBackend = new Backend(null);
-      const backendProject = new Project(project, backendBackend);
-      const backendNamespace = new Namespace(backendProject, '__tfinjs__backend__');
+      const backendProject = new Project(project, backendBackend, dist, fileStystem);
+      const backendNamespace = new Namespace(
+        backendProject,
+        '__tfinjs__backend__',
+      );
       const deploymentConfig = new DeploymentConfig(backendNamespace, {
         environment: '_',
         version: '_',
@@ -25,6 +37,14 @@ class Project {
       });
       this.addResource(this.backend.create(deploymentConfig));
     }
+  }
+
+  getFs() {
+    return this.fs;
+  }
+
+  getDist() {
+    return this.dist;
   }
 
   getValue() {

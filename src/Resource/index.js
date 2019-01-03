@@ -1,6 +1,9 @@
+import { resolve } from 'path';
+import mkdirp from 'mkdirp';
 import assert from 'assert';
 import camelCase from 'lodash/camelCase';
 import set from 'lodash/set';
+import get from 'lodash/get';
 import JsToHcl from '../JsToHcl';
 import requiredParam from '../statics/requiredParam';
 import md5 from '../statics/md5';
@@ -9,8 +12,9 @@ import DeploymentConfig from '../DeploymentConfig';
 import createTerraformStringInterpolation from '../statics/createTerraformStringInterpolation';
 import resourceExistsInList from '../statics/resourceExistsInList';
 import uuid from '../statics/uuid';
+import hclPrettify from '../statics/hclPrettify';
 
-const hooks = ['deployHook', 'serializingHook'];
+const hooks = ['buildHook', 'serializingHook'];
 
 /**
  * Creates an instance of Resource.
@@ -76,11 +80,17 @@ class Resource {
   /**
    * Gets the resource body
    *
-   * @returns {body} body - Resource body
+   * @param {string|number=} key
+   * @returns {body} body - Resource body or the value of the key
    * @memberof Resource
    */
-  getBody() {
-    return this.body;
+  getBody(key) {
+    if (typeof key === 'string' || typeof key === 'number') {
+      return get(this.body, key);
+    }
+    return {
+      ...this.body,
+    };
   }
 
   /**
@@ -240,6 +250,12 @@ class Resource {
     Object.entries(this[key]).forEach(([id, hook]) => hook(this, id));
   }
 
+  async callAsyncHooks(key) {
+    await Promise.all(
+      Object.entries(this[key]).map(async ([id, hook]) => hook(this, id)),
+    );
+  }
+
   /**
    * Generates the HCL content of the resource (with remote states)
    *
@@ -290,12 +306,26 @@ class Resource {
     ].join('\n');
   }
 
-  deploy() {
-    this.callHooks('preDeployHooks');
+  getOutputFolder() {
+    const dist = this.deploymentConfig.namespace.project.getDist();
+    const name = this.versionedName();
+    const outputFolder = resolve(dist, name);
+    return outputFolder;
   }
 
-  didDeploy() {
-    this.callHooks('postDeployHooks');
+  async build() {
+    await this.callAsyncHooks('preBuildHooks');
+    const fs = this.deploymentConfig.namespace.project.getFs();
+    const outputFolder = this.getOutputFolder();
+    mkdirp.sync(outputFolder, {
+      fs,
+    });
+    const hcl = this.getHcl();
+
+    const prettyHcl = await hclPrettify(hcl);
+
+    fs.writeFileSync(resolve(outputFolder, 'main.tf'), prettyHcl);
+    await this.callAsyncHooks('postBuildHooks');
   }
 }
 
