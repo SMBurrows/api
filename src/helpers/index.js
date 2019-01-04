@@ -22,6 +22,10 @@ export const reference = (resource, key) => {
       sourceResource instanceof Resource,
       'sourceResource must be an instance of Resource',
     );
+    assert(
+      sourceResource !== resource,
+      'you cannot reference the resource itself',
+    );
     sourceResource.registerRemoteState(resource);
     resource.addOutputKey(key);
 

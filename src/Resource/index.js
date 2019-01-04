@@ -266,12 +266,8 @@ class Resource {
    * @memberof Resource
    */
   registerRemoteState(resource = requiredParam('resource')) {
-    if (!(resource instanceof Resource)) {
-      throwError(
-        'resource must be a instance of Resource',
-        this.registerRemoteState,
-      );
-    }
+    assert(resource instanceof Resource, 'resource must be a instance of Resource')
+    
     if (!resourceExistsInList(this.remoteStates, resource)) {
       this.remoteStates.push(resource);
     }

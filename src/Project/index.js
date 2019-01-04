@@ -1,12 +1,17 @@
 import fs from 'fs';
+import get from 'lodash/get';
 import assert from 'assert';
+import fromPairs from 'lodash/fromPairs';
+import flatten from 'lodash/flatten';
 import { isAbsolute } from 'path';
+import { join } from 'upath';
 import Backend from '../Backend';
 import requiredParam from '../statics/requiredParam';
 import Resource from '../Resource';
 import resourceExistsInList from '../statics/resourceExistsInList';
 import DeploymentConfig from '../DeploymentConfig';
 import Namespace from '../Namespace';
+import GraphTraverser, { NodeStack } from './GraphTraverser';
 
 class Project {
   constructor(project, backend, dist, fileStystem = fs) {
@@ -17,7 +22,10 @@ class Project {
       'Dist must be a string and an absolute path pointing the the dist folder for tfinjs',
     );
 
-    assert(fs.writeFileSync && fs.readFileSync && fs.mkdir && fs.stat, 'fileSystem must be implemented as the node fs module');
+    assert(
+      fs.writeFileSync && fs.readFileSync && fs.mkdir && fs.stat,
+      'fileSystem must be implemented as the node fs module',
+    );
 
     this.project = project;
     this.backend = backend;
@@ -27,7 +35,12 @@ class Project {
     if (this.backend.shouldCreateBackend()) {
       /* create dummy deployment and api where the backend can be created */
       const backendBackend = new Backend(null);
-      const backendProject = new Project(project, backendBackend, dist, fileStystem);
+      const backendProject = new Project(
+        project,
+        backendBackend,
+        dist,
+        fileStystem,
+      );
       const backendNamespace = new Namespace(
         backendProject,
         '__tfinjs__backend__',
@@ -89,6 +102,80 @@ class Project {
    */
   getResources() {
     return this.resources;
+  }
+
+  getDependencyGraph1() {
+    const withoutDependencies = this.resources.filter(
+      (resource) => resource.remoteStates.length === 0,
+    );
+    const hasFirstLevelDependencies = this.resources.filter(
+      (resource) =>
+        resource.remoteStates.length > 0
+        && resource.remoteStates.every((depResource) =>
+          withoutDependencies.includes(depResource)),
+    );
+    this.resources.filter(
+      (resource) =>
+        resource.remoteStates.length > 0
+        && resource.remoteStates.every((depResource) =>
+          [...withoutDependencies, ...hasFirstLevelDependencies].includes(
+            depResource,
+          )),
+    );
+  }
+
+  getDependencyGraph() {
+    const levels = [];
+
+    const withoutDependencies = this.resources.filter(
+      (resource) => resource.remoteStates.length === 0,
+    );
+    levels.push(withoutDependencies);
+
+    const addWhatCanBeAddedToLevels = () => {
+      const dependencyLevel = this.resources.filter(
+        (resource) =>
+          !flatten(levels).includes(resource)
+          && resource.remoteStates.every((depResource) =>
+            flatten(levels).includes(depResource)),
+      );
+      if (dependencyLevel.length > 0) {
+        levels.push(dependencyLevel);
+        addWhatCanBeAddedToLevels();
+      }
+    };
+
+    addWhatCanBeAddedToLevels();
+
+    const circular = this.resources.filter(
+      (resource) => !flatten(levels).includes(resource),
+    );
+
+    const tree = flatten(levels);
+
+    const nodes = new NodeStack();
+
+    circular.forEach((reference) => {
+      const name = reference.getUri();
+      nodes.addNode(name);
+
+      reference.remoteStates.forEach((dependency) => {
+        nodes.addEdge(name, dependency.getUri());
+      });
+    });
+
+    const graph = new GraphTraverser(nodes);
+
+    const circularDocumentation = graph
+      .getCycles()
+      .getNodeStacks()
+      .map((nodeStack) => nodeStack.getSortedNodes().join('->'));
+
+    return {
+      tree: tree.map((resource) => resource.getUri()),
+      circular: circular.map((resource) => resource.getUri()),
+      circularDocumentation,
+    };
   }
 }
 
