@@ -35,14 +35,14 @@ class Project {
     if (this.backend.shouldCreateBackend()) {
       /* create dummy deployment and api where the backend can be created */
       const backendBackend = new Backend(null);
-      const backendProject = new Project(
+      this.backendProject = new Project(
         project,
         backendBackend,
         dist,
         fileStystem,
       );
       const backendNamespace = new Namespace(
-        backendProject,
+        this.backendProject,
         '__tfinjs__backend__',
       );
       const deploymentConfig = new DeploymentConfig(backendNamespace, {
@@ -60,6 +60,17 @@ class Project {
 
   getDist() {
     return this.dist;
+  }
+
+  setDist(dist) {
+    assert(
+      typeof dist === 'string' && isAbsolute(dist),
+      'dist must be a string of an absolute path',
+    );
+    if (this.backend.shouldCreateBackend()) {
+      this.backendProject.setDist(dist);
+    }
+    this.dist = dist;
   }
 
   getValue() {
@@ -102,26 +113,6 @@ class Project {
    */
   getResources() {
     return this.resources;
-  }
-
-  getDependencyGraph1() {
-    const withoutDependencies = this.resources.filter(
-      (resource) => resource.remoteStates.length === 0,
-    );
-    const hasFirstLevelDependencies = this.resources.filter(
-      (resource) =>
-        resource.remoteStates.length > 0
-        && resource.remoteStates.every((depResource) =>
-          withoutDependencies.includes(depResource)),
-    );
-    this.resources.filter(
-      (resource) =>
-        resource.remoteStates.length > 0
-        && resource.remoteStates.every((depResource) =>
-          [...withoutDependencies, ...hasFirstLevelDependencies].includes(
-            depResource,
-          )),
-    );
   }
 
   getDependencyGraph() {
@@ -176,6 +167,10 @@ class Project {
       circular: circular.map((resource) => resource.getUri()),
       circularDocumentation,
     };
+  }
+
+  getResourceFromUri(uri) {
+    return this.resources.find((resource) => resource.getUri() === uri);
   }
 }
 

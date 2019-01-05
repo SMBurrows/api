@@ -29,8 +29,9 @@ export const reference = (resource, key) => {
     sourceResource.registerRemoteState(resource);
     resource.addOutputKey(key);
 
+    /* tfinjs prefix because of https://github.com/hashicorp/terraform/issues/7982 */
     return createTerraformStringInterpolation(
-      `data.terraform_remote_state.${resource.versionedName()}.${key}`,
+      `data.terraform_remote_state.${resource.versionedName()}.tfintf_${key}`,
     );
   };
 };

@@ -15,8 +15,8 @@ terraform {
 }
 
 resource "aws_iam_role_policy_attachment" "cloud_watch_role_attachment" {
-  policy_arn = "${data.terraform_remote_state.tijpetshop3ea74834.arn}"
-  role       = "${data.terraform_remote_state.tijpetshop8e721d9b.name}"
+  policy_arn = "${data.terraform_remote_state.tijpetshop3ea74834.tfintf_arn}"
+  role       = "${data.terraform_remote_state.tijpetshop8e721d9b.tfintf_name}"
 }
 
 data "terraform_remote_state" "tijpetshop8e721d9b" {

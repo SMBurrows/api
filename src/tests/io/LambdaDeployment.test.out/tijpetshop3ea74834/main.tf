@@ -20,6 +20,6 @@ resource "aws_iam_policy" "cloudwatch_attachable_policy" {
 EOF
 }
 
-output "arn" {
+output "tfinjs_arn" {
   value = "${aws_iam_policy.cloudwatch_attachable_policy.arn}"
 }

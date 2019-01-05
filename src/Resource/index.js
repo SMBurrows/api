@@ -318,7 +318,8 @@ class Resource {
     const outputs = this.outputs
       .map(
         (key) =>
-          `output "${key}" {${converter.stringify({
+          /* tfinjs prefix because of https://github.com/hashicorp/terraform/issues/7982 */
+          `output "tfinjs_${key}" {${converter.stringify({
             value: createTerraformStringInterpolation(
               `${this.type}.${this.name}.${key}`,
             ),

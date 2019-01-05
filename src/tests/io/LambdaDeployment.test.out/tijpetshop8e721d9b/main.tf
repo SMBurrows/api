@@ -20,10 +20,10 @@ resource "aws_iam_role" "pets" {
 EOF
 }
 
-output "arn" {
+output "tfinjs_arn" {
   value = "${aws_iam_role.pets.arn}"
 }
 
-output "name" {
+output "tfinjs_name" {
   value = "${aws_iam_role.pets.name}"
 }

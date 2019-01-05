@@ -19,7 +19,7 @@ resource "aws_dynamodb_table" "pets" {
   function_name = "tijpetshop8251238a"
   handler       = "service.handler"
   memory_size   = 512
-  role          = "${data.terraform_remote_state.tijpetshop8e8646c4.arn}"
+  role          = "${data.terraform_remote_state.tijpetshop8e8646c4.tfintf_arn}"
   runtime       = "nodejs8.10"
   s3_bucket     = "pet-lambda-bucket"
   s3_key        = "tijpetshop8251238a"
