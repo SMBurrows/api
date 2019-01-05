@@ -35,7 +35,7 @@ class DeploymentConfig {
    * providerUri and the namespace.
    *
    * @returns {apiUri} apiUri - The Api uri
-   * @memberof Api
+   * @memberof DeploymentConfig
    */
   getUri() {
     const { environment, version, namespace } = this;
