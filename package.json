@@ -1,6 +1,6 @@
 {
   "name": "@tfinjs/api",
-  "version": "0.0.12-beta",
+  "version": "0.0.14-beta",
   "description": "",
   "main": "./main/index.js",
   "scripts": {

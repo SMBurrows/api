@@ -119,7 +119,7 @@ class Project {
     const levels = [];
 
     const withoutDependencies = this.resources.filter(
-      (resource) => resource.remoteStates.length === 0,
+      (resource) => resource.getDependencies().length === 0,
     );
     levels.push(withoutDependencies);
 
@@ -127,7 +127,7 @@ class Project {
       const dependencyLevel = this.resources.filter(
         (resource) =>
           !flatten(levels).includes(resource)
-          && resource.remoteStates.every((depResource) =>
+          && resource.getDependencies().every((depResource) =>
             flatten(levels).includes(depResource)),
       );
       if (dependencyLevel.length > 0) {
@@ -146,11 +146,11 @@ class Project {
 
     const nodes = new NodeStack();
 
-    circular.forEach((reference) => {
-      const name = reference.getUri();
+    circular.forEach((resource) => {
+      const name = resource.getUri();
       nodes.addNode(name);
 
-      reference.remoteStates.forEach((dependency) => {
+      resource.getDependencies().forEach((dependency) => {
         nodes.addEdge(name, dependency.getUri());
       });
     });

@@ -24,6 +24,8 @@ const hooks = ['buildHook', 'serializingHook'];
  * @param {type} type - Resource type, e.g. aws_iam_role
  * @param {name} name - Resource name, some name for the resource
  * @param {body} body - Resource body, the terraform key value pairs
+ * @param {object} options - Options
+ * @param {resource[]} options.dependsOn - Resources this resource explicitly depends on
  * @class Resource
  */
 class Resource {
@@ -32,6 +34,7 @@ class Resource {
     type = requiredParam('type'),
     name = requiredParam('name'),
     body = requiredParam('body'),
+    options,
   ) {
     assert(
       deploymentConfig instanceof DeploymentConfig,
@@ -40,6 +43,17 @@ class Resource {
     assert(typeof type === 'string', 'type must be string');
     assert(typeof name === 'string', 'name must be string');
     assert(typeof body === 'object', 'name must be object');
+    assert(
+      typeof options === 'undefined' || typeof options === 'object',
+      'options must be an object',
+    );
+    if (options && options.dependsOn) {
+      assert(
+        typeof options.dependsOn === 'undefined'
+          || Array.isArray(options.dependsOn),
+        'options.dependsOn must be an array',
+      );
+    }
 
     const makeAddHook = (hookName) => (hook) => {
       const id = uuid();
@@ -76,6 +90,41 @@ class Resource {
     this.body = this.parseValue(body);
 
     this.deploymentConfig.namespace.project.addResource(this);
+
+    this.options = options;
+  }
+
+  /**
+   * Gets all the resources this resource explicitly and implicitly depends on
+   *
+   * @returns {resource[]} dependencies
+   * @memberof Resource
+   */
+  getDependencies() {
+    return [...this.getRemoteStates(), ...this.getDependsOn()];
+  }
+
+  /**
+   * Gets the resources this resource implicitly depends on
+   *
+   * @returns {resource[]} remoteStates
+   * @memberof Resource
+   */
+  getRemoteStates() {
+    return this.remoteStates;
+  }
+
+  /**
+   * Gets the resources this resource explicitly depends on
+   *
+   * @returns {resource[]} dependsOn
+   * @memberof Resource
+   */
+  getDependsOn() {
+    if (this.options && this.options.dependsOn) {
+      return this.options.dependsOn;
+    }
+    return [];
   }
 
   /**
