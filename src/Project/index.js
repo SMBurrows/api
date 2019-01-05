@@ -1,10 +1,7 @@
 import fs from 'fs';
-import get from 'lodash/get';
 import assert from 'assert';
-import fromPairs from 'lodash/fromPairs';
 import flatten from 'lodash/flatten';
 import { isAbsolute } from 'path';
-import { join } from 'upath';
 import Backend from '../Backend';
 import requiredParam from '../statics/requiredParam';
 import Resource from '../Resource';
@@ -13,6 +10,15 @@ import DeploymentConfig from '../DeploymentConfig';
 import Namespace from '../Namespace';
 import GraphTraverser, { NodeStack } from './GraphTraverser';
 
+/**
+ * Creates an instance of Project.
+ *
+ * @param {string} project - The name of the project
+ * @param {backend} backen - An instance of the Backend class
+ * @param {string} dist - An absolute path pointing to the destination folder for built resources
+ * @param {*} [fileStystem=fs]
+ * @class Project
+ */
 class Project {
   constructor(project, backend, dist, fileStystem = fs) {
     assert(typeof project === 'string', 'project must be a string');
@@ -54,14 +60,32 @@ class Project {
     }
   }
 
+  /**
+   * Gets the filesystem of this project
+   *
+   * @returns {*} fs
+   * @memberof Project
+   */
   getFs() {
     return this.fs;
   }
 
+  /**
+   * Gets the dist folder of this project
+   *
+   * @returns {string} dist
+   * @memberof Project
+   */
   getDist() {
     return this.dist;
   }
 
+  /**
+   * Updates the dist folder of this project
+   *
+   * @param {string} dist
+   * @memberof Project
+   */
   setDist(dist) {
     assert(
       typeof dist === 'string' && isAbsolute(dist),
@@ -73,6 +97,12 @@ class Project {
     this.dist = dist;
   }
 
+  /**
+   * Gets the name value of this project
+   *
+   * @returns {string} project - The name of the project
+   * @memberof Project
+   */
   getValue() {
     return this.project;
   }
@@ -115,6 +145,12 @@ class Project {
     return this.resources;
   }
 
+  /**
+   * Gets the dependency tree of the resources of the project
+   *
+   * @returns {object} dependencyTree
+   * @memberof Project
+   */
   getDependencyGraph() {
     const levels = [];
 
@@ -127,8 +163,9 @@ class Project {
       const dependencyLevel = this.resources.filter(
         (resource) =>
           !flatten(levels).includes(resource)
-          && resource.getDependencies().every((depResource) =>
-            flatten(levels).includes(depResource)),
+          && resource
+            .getDependencies()
+            .every((depResource) => flatten(levels).includes(depResource)),
       );
       if (dependencyLevel.length > 0) {
         levels.push(dependencyLevel);
@@ -169,6 +206,13 @@ class Project {
     };
   }
 
+  /**
+   * Gets a resource of the project based on its uri
+   *
+   * @param {string} uri
+   * @returns {resource} resource
+   * @memberof Project
+   */
   getResourceFromUri(uri) {
     return this.resources.find((resource) => resource.getUri() === uri);
   }

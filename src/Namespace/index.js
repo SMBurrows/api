@@ -1,6 +1,13 @@
 import assert from 'assert';
 import Project from '../Project';
 
+/**
+ * Creates an instance of Namespace.
+ *
+ * @param {project} project - An instance of the Project class
+ * @param {string} namespace - The namespace string
+ * @class Namespace
+ */
 class Namespace {
   constructor(project, namespace) {
     assert(project instanceof Project);
@@ -10,6 +17,12 @@ class Namespace {
     this.project = project;
   }
 
+  /**
+   * Gets the value of the namespace
+   *
+   * @returns {string} namepsace
+   * @memberof Namespace
+   */
   getValue() {
     return this.namespace;
   }
