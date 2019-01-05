@@ -13,6 +13,7 @@ import createTerraformStringInterpolation from '../statics/createTerraformString
 import resourceExistsInList from '../statics/resourceExistsInList';
 import uuid from '../statics/uuid';
 import hclPrettify from '../statics/hclPrettify';
+import { TERRAFORM_OUTPUT_PREFIX } from '../constants';
 
 const hooks = ['buildHook', 'serializingHook'];
 
@@ -266,8 +267,11 @@ class Resource {
    * @memberof Resource
    */
   registerRemoteState(resource = requiredParam('resource')) {
-    assert(resource instanceof Resource, 'resource must be a instance of Resource')
-    
+    assert(
+      resource instanceof Resource,
+      'resource must be a instance of Resource',
+    );
+
     if (!resourceExistsInList(this.remoteStates, resource)) {
       this.remoteStates.push(resource);
     }
@@ -319,7 +323,7 @@ class Resource {
       .map(
         (key) =>
           /* tfinjs prefix because of https://github.com/hashicorp/terraform/issues/7982 */
-          `output "tfinjs_${key}" {${converter.stringify({
+          `output "${TERRAFORM_OUTPUT_PREFIX}${key}" {${converter.stringify({
             value: createTerraformStringInterpolation(
               `${this.type}.${this.name}.${key}`,
             ),

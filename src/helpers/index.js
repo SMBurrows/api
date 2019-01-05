@@ -1,6 +1,7 @@
 import assert from 'assert';
 import Resource from '../Resource';
 import createTerraformStringInterpolation from '../statics/createTerraformStringInterpolation';
+import { TERRAFORM_OUTPUT_PREFIX } from '../constants';
 
 export const versionedName = () => (resource) => {
   assert(
@@ -29,9 +30,9 @@ export const reference = (resource, key) => {
     sourceResource.registerRemoteState(resource);
     resource.addOutputKey(key);
 
-    /* tfinjs prefix because of https://github.com/hashicorp/terraform/issues/7982 */
+    /* prefix because of https://github.com/hashicorp/terraform/issues/7982 */
     return createTerraformStringInterpolation(
-      `data.terraform_remote_state.${resource.versionedName()}.tfintf_${key}`,
+      `data.terraform_remote_state.${resource.versionedName()}.${TERRAFORM_OUTPUT_PREFIX}${key}`,
     );
   };
 };
