@@ -168,7 +168,7 @@ const petLambdaExecRole = new Resource(
 ```typescript
 function versionedName(): function (resource): string
 ```
-The `versionedName()(resource)` will return a string consisting of a substring of the project name and a 8 character slice of an md5 hash derived from. This ensures no naming conflicts will occur when following this schema.
+The `versionedName()(resource)` will return a string consisting of a substring of the project name and a 8 character slice of an hash derived from: 
 
 1. project
 2. deployment environment
@@ -177,6 +177,8 @@ The `versionedName()(resource)` will return a string consisting of a substring o
 5. namespace
 6. resource type - the terraform resource type
 7. resource name - a unique name for the resource (unique under the current namespace)
+
+This ensures no naming conflicts will occur when following this schema.
 
 
 ### reference

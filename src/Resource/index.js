@@ -4,9 +4,9 @@ import assert from 'assert';
 import camelCase from 'lodash/camelCase';
 import set from 'lodash/set';
 import get from 'lodash/get';
+import has from 'lodash/has';
 import JsToHcl from '../JsToHcl';
 import requiredParam from '../statics/requiredParam';
-import md5 from '../statics/md5';
 import throwError from '../statics/throwError';
 import DeploymentConfig from '../DeploymentConfig';
 import createTerraformStringInterpolation from '../statics/createTerraformStringInterpolation';
@@ -14,6 +14,7 @@ import resourceExistsInList from '../statics/resourceExistsInList';
 import uuid from '../statics/uuid';
 import hclPrettify from '../statics/hclPrettify';
 import { TERRAFORM_OUTPUT_PREFIX } from '../constants';
+import murmur from '../statics/murmur';
 
 const hooks = ['buildHook', 'serializingHook'];
 
@@ -274,13 +275,16 @@ class Resource {
     /* must depend on these 7 parameters */
     const uri = this.getUri();
 
+    /* length is 30: 3 from tij prefix, 20 from projectName and 7 from murmur */
+    /* must be under 32 */
+
     const normalizeProjectName = this.deploymentConfig.namespace.project
       .getValue()
-      .slice(0, 19)
       .replace(/[^A-Za-z0-9]/g, '')
+      .slice(0, 20)
       .toLowerCase();
 
-    const versionedName = `tij${normalizeProjectName}${md5(uri).slice(0, 8)}`;
+    const versionedName = `tij${normalizeProjectName}${murmur(uri)}`;
     return versionedName;
   }
 
@@ -416,6 +420,43 @@ class Resource {
 
     fs.writeFileSync(resolve(outputFolder, 'main.tf'), prettyHcl);
     await this.callAsyncHooks('postBuildHooks');
+  }
+
+  contentHashSeeds = {
+    hcl: (r) => r.getHcl(),
+  };
+
+  getContentHashSeeds() {
+    return this.contentHashSeeds;
+  }
+
+  addContentHashSeed(key, func) {
+    assert(
+      !has(this.contentHashSeeds, key),
+      'You cannot add an already existing seed function',
+    );
+    const testFunc = func(this);
+    assert(
+      typeof testFunc === 'string' || typeof testFunc === 'number',
+      'func must return number or string',
+    );
+    assert(
+      testFunc === func(this),
+      'func must return the samve value each time',
+    );
+    this.contentHashSeeds[key] = func;
+  }
+
+  removeContentHashSeed(key) {
+    delete this.contentHashSeeds[key];
+  }
+
+  getContentHash() {
+    const text = Object.values(this.getContentHashSeeds())
+      .map((seedFunc) => seedFunc(this))
+      .join('');
+    const hash = murmur(text);
+    return hash;
   }
 }
 
