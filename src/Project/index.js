@@ -16,36 +16,22 @@ import GraphTraverser, { NodeStack } from './GraphTraverser';
  * @param {string} project - The name of the project
  * @param {backend} backen - An instance of the Backend class
  * @param {string} dist - An absolute path pointing to the destination folder for built resources
- * @param {*} [fileStystem=fs]
+ * @param {*} [fileSystem=fs]
  * @class Project
  */
 class Project {
-  constructor(project, backend, dist, fileStystem = fs) {
+  constructor(project, backend, dist, fileSystem = fs) {
     assert(typeof project === 'string', 'project must be a string');
     assert(backend instanceof Backend, 'backend must be instance of Backend');
-    assert(
-      typeof dist === 'string' && isAbsolute(dist),
-      'Dist must be a string and an absolute path pointing the the dist folder for tfinjs',
-    );
 
-    assert(
-      fs.writeFileSync && fs.readFileSync && fs.mkdir && fs.stat,
-      'fileSystem must be implemented as the node fs module',
-    );
-
-    this.project = project;
-    this.backend = backend;
-    this.dist = dist;
-    this.fs = fileStystem;
-
-    if (this.backend.shouldCreateBackend()) {
+    if (backend.shouldCreateBackend()) {
       /* create dummy deployment and api where the backend can be created */
       const backendBackend = new Backend(null);
       this.backendProject = new Project(
         project,
         backendBackend,
         dist,
-        fileStystem,
+        fileSystem,
       );
       const backendNamespace = new Namespace(
         this.backendProject,
@@ -54,10 +40,16 @@ class Project {
       const deploymentConfig = new DeploymentConfig(backendNamespace, {
         environment: '_',
         version: '_',
-        provider: this.backend.getProvider(),
+        provider: backend.getProvider(),
       });
-      this.addResource(this.backend.create(deploymentConfig));
+      this.addResource(backend.create(deploymentConfig));
     }
+
+    this.project = project;
+    this.backend = backend;
+
+    this.setFs(fileSystem);
+    this.setDist(dist);
   }
 
   /**
@@ -68,6 +60,26 @@ class Project {
    */
   getFs() {
     return this.fs;
+  }
+
+  /**
+   * Sets the filesystem of this project
+   *
+   * @returns {*} fs
+   * @memberof Project
+   */
+  setFs(fileSystem) {
+    assert(
+      fileSystem.writeFileSync
+        && fileSystem.readFileSync
+        && fileSystem.mkdir
+        && fileSystem.stat,
+      'fileSystem must be implemented as the node fs module',
+    );
+    if (this.backend.shouldCreateBackend()) {
+      this.backendProject.setFs(fileSystem);
+    }
+    this.fs = fileSystem;
   }
 
   /**
@@ -89,7 +101,7 @@ class Project {
   setDist(dist) {
     assert(
       typeof dist === 'string' && isAbsolute(dist),
-      'dist must be a string of an absolute path',
+      'dist must be a string and an absolute path pointing the the dist folder for tfinjs',
     );
     if (this.backend.shouldCreateBackend()) {
       this.backendProject.setDist(dist);
