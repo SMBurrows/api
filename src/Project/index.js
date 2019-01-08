@@ -42,7 +42,8 @@ class Project {
         version: '_',
         provider: backend.getProvider(),
       });
-      this.addResource(backend.create(deploymentConfig));
+      const backendResource = backend.create(deploymentConfig);
+      this.addResource(backendResource);
     }
 
     this.project = project;

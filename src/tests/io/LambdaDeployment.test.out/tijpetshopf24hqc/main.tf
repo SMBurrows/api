@@ -14,10 +14,33 @@ terraform {
   }
 }
 
+data "external" "save_latest_deploy" {
+  depends_on = [
+    "aws_iam_policy.cloudwatch_attachable_policy",
+  ]
+
+  program = [
+    "-c",
+    "bash",
+    "require('@tfinjs/helpers').saveDeploymentStatus('${path.root}', 'tijpetshopf24hqc')",
+  ]
+}
+
 resource "aws_iam_policy" "cloudwatch_attachable_policy" {
   policy = <<EOF
 {"Version":"2012-10-17","Statement":[{"Action":["logs:CreateLogStream"],"Effect":"Allow","Resource":"arn:aws:logs:eu-north-1:133713371337:log-group:/aws/lambda/tijpetshop1r2h0yy:*"},{"Action":["logs:PutLogEvents"],"Effect":"Allow","Resource":"arn:aws:logs:eu-north-1:133713371337:log-group:/aws/lambda/tijpetshop1r2h0yy:*:*"}]}
 EOF
+
+  provisioner "local-exec" {
+    command = "require('@tfinjs/helpers').saveDeploymentStatus('${path.root}', 'DESTROYED')"
+
+    interpreter = [
+      "-e",
+      "node",
+    ]
+
+    when = "destroy"
+  }
 }
 
 output "tfinjs_arn" {

@@ -5,7 +5,7 @@ import camelCase from 'lodash/camelCase';
 import set from 'lodash/set';
 import get from 'lodash/get';
 import has from 'lodash/has';
-import JsToHcl from '../JsToHcl';
+import JsToHcl, { Provisioner } from '../JsToHcl';
 import requiredParam from '../statics/requiredParam';
 import throwError from '../statics/throwError';
 import DeploymentConfig from '../DeploymentConfig';
@@ -181,6 +181,12 @@ class Resource {
     }
     return {
       ...this.body,
+      __tfinjsDeleteProvisioner__: new Provisioner('local-exec', {
+        when: 'destroy',
+        command:
+          "require('@tfinjs/api/utils').saveDeploymentStatus('${path.root}', 'DESTROYED')",
+        interpreter: ['node', '-e'],
+      }),
     };
   }
 
@@ -224,7 +230,7 @@ class Resource {
    */
   parseValue(params = requiredParam('params')) {
     let result = params;
-    if (typeof params === 'function') {
+    if (typeof params === 'function' && !(params instanceof Provisioner)) {
       result = params(this);
     } else if (typeof params === 'object' && !Array.isArray(params)) {
       result = this.mapObject(params);
@@ -361,7 +367,7 @@ class Resource {
     const converter = new JsToHcl();
     const resourceHcl = `resource "${this.type}" "${
       this.name
-    }" {${converter.stringify(this.body)}}`;
+    }" {${converter.stringify(this.getBody())}}`;
 
     const remoteDataSourcesHcl = this.remoteStates
       .map((resource) => {
@@ -389,11 +395,23 @@ class Resource {
       this.versionedName(),
     );
 
+    const dataHcl = `data "external" "save_latest_deploy" {${converter.stringify(
+      {
+        depends_on: [`${this.type}.${this.name}`],
+        program: [
+          'node',
+          '-e',
+          `require('@tfinjs/api/utils').saveDeploymentStatus('\${path.root}', '${this.versionedName()}')`,
+        ],
+      },
+    )}}`;
+
     this.callHooks('postSerializingHooks');
 
     return [
       providerHcl,
       backendHcl,
+      dataHcl,
       resourceHcl,
       remoteDataSourcesHcl,
       outputs,

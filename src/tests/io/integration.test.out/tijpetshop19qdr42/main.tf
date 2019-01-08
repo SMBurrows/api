@@ -14,9 +14,33 @@ terraform {
   }
 }
 
+data "external" "save_latest_deploy" {
+  depends_on = [
+    "aws_dynamodb_table.customers",
+  ]
+
+  program = [
+    "-c",
+    "bash",
+    "require('@tfinjs/helpers').saveDeploymentStatus('${path.root}', 'tijpetshop19qdr42')",
+  ]
+}
+
 resource "aws_dynamodb_table" "customers" {
-  hash_key       = "CustomerId"
-  name           = "tijpetshop19qdr42"
+  hash_key = "CustomerId"
+  name     = "tijpetshop19qdr42"
+
+  provisioner "local-exec" {
+    command = "require('@tfinjs/helpers').saveDeploymentStatus('${path.root}', 'DESTROYED')"
+
+    interpreter = [
+      "-e",
+      "node",
+    ]
+
+    when = "destroy"
+  }
+
   read_capacity  = 20
   write_capacity = 20
 }

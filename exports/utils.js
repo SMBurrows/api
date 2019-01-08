@@ -5,6 +5,7 @@ import requiredParam from '../src/statics/requiredParam';
 import throwError from '../src/statics/throwError';
 import uuid from '../src/statics/uuid';
 import murmur from '../src/statics/murmur';
+import saveDeploymentStatus from '../src/statics/saveDeploymentStatus';
 
 export default {
   JsToHcl,
@@ -14,4 +15,5 @@ export default {
   throwError,
   uuid,
   murmur,
+  saveDeploymentStatus,
 };

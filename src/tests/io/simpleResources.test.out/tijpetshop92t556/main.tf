@@ -14,9 +14,33 @@ terraform {
   }
 }
 
+data "external" "save_latest_deploy" {
+  depends_on = [
+    "aws_iam_role_policy_attachment.cloud_watch_role_attachment",
+  ]
+
+  program = [
+    "-c",
+    "bash",
+    "require('@tfinjs/helpers').saveDeploymentStatus('${path.root}', 'tijpetshop92t556')",
+  ]
+}
+
 resource "aws_iam_role_policy_attachment" "cloud_watch_role_attachment" {
   policy_arn = "${data.terraform_remote_state.tijpetshopkhn8xy.tfinjs_arn}"
-  role       = "${data.terraform_remote_state.tijpetshop1jcp9vz.tfinjs_name}"
+
+  provisioner "local-exec" {
+    command = "require('@tfinjs/helpers').saveDeploymentStatus('${path.root}', 'DESTROYED')"
+
+    interpreter = [
+      "-e",
+      "node",
+    ]
+
+    when = "destroy"
+  }
+
+  role = "${data.terraform_remote_state.tijpetshop1jcp9vz.tfinjs_name}"
 }
 
 data "terraform_remote_state" "tijpetshop1jcp9vz" {
