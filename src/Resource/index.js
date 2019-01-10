@@ -437,6 +437,19 @@ class Resource {
     const prettyHcl = await hclPrettify(hcl);
 
     fs.writeFileSync(resolve(outputFolder, 'main.tf'), prettyHcl);
+    fs.writeFileSync(
+      resolve(outputFolder, 'tfinjs.json'),
+      JSON.stringify(
+        {
+          name: this.versionedName(),
+          uri: this.getUri(),
+          contentHash: this.getContentHash(),
+          dependencies: this.getDependencies(),
+        },
+        null,
+        2,
+      ),
+    );
     await this.callAsyncHooks('postBuildHooks');
   }
 
