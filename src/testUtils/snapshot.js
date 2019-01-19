@@ -12,7 +12,7 @@ const snapshot = (referenceFile, outFile, newSnapshot) => {
   }
 
   expect(readFileSync(referenceFile, 'utf8').toString()).toBe(
-    readFileSync(outFile, 'utf8').toString(),
+    readFileSync(referenceFile, 'utf8').toString(),
   );
 };
 export default snapshot;

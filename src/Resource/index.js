@@ -444,7 +444,8 @@ class Resource {
           name: this.versionedName(),
           uri: this.getUri(),
           contentHash: this.getContentHash(),
-          dependencies: this.getDependencies(),
+          dependencies: this.getDependencies().map((resource) =>
+            resource.getUri()),
         },
         null,
         2,

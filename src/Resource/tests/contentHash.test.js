@@ -1,8 +1,7 @@
 /* eslint-env jest */
 
 import Resource from '..';
-import { reference } from '../../helpers';
-import deploymentConfig, { project } from './deploymentConfig';
+import deploymentConfig from './deploymentConfig';
 
 test('circular dependencies', async () => {
   const one = new Resource(deploymentConfig, 'aws_dynamodb_table', '1', {
@@ -12,11 +11,11 @@ test('circular dependencies', async () => {
     resourceId: 2,
   });
 
-  expect(one.getContentHash()).toBe('k0ulsj');
-  expect(two.getContentHash()).toBe('1fh7rky');
+  expect(one.getContentHash()).toBe('1hh5phc');
+  expect(two.getContentHash()).toBe('1h5q195');
 
   two.addContentHashSeed('newSeed', () => 123);
-  expect(two.getContentHash()).toBe('g7q14s');
+  expect(two.getContentHash()).toBe('3mrkcw');
   two.removeContentHashSeed('newSeed');
-  expect(two.getContentHash()).toBe('1fh7rky');
+  expect(two.getContentHash()).toBe('1h5q195');
 });

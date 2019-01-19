@@ -8,7 +8,6 @@ import Resource from '../Resource';
 import resourceExistsInList from '../statics/resourceExistsInList';
 import DeploymentConfig from '../DeploymentConfig';
 import Namespace from '../Namespace';
-import GraphTraverser, { NodeStack } from './GraphTraverser';
 
 /**
  * Creates an instance of Project.
@@ -159,64 +158,21 @@ class Project {
   }
 
   /**
-   * Gets the dependency tree of the resources of the project
+   * Gets the dependency graph of the resources of the project
    *
-   * @returns {object} dependencyTree
+   * @returns {object} graph
    * @memberof Project
    */
   getDependencyGraph() {
-    const levels = [];
-
-    const withoutDependencies = this.resources.filter(
-      (resource) => resource.getDependencies().length === 0,
+    return this.getResources().reduce(
+      (nodes, resource) => ({
+        ...nodes,
+        [resource.getUri()]: resource
+          .getDependencies()
+          .map((dependencyResource) => dependencyResource.getUri()),
+      }),
+      {},
     );
-    levels.push(withoutDependencies);
-
-    const addWhatCanBeAddedToLevels = () => {
-      const dependencyLevel = this.resources.filter(
-        (resource) =>
-          !flatten(levels).includes(resource)
-          && resource
-            .getDependencies()
-            .every((depResource) => flatten(levels).includes(depResource)),
-      );
-      if (dependencyLevel.length > 0) {
-        levels.push(dependencyLevel);
-        addWhatCanBeAddedToLevels();
-      }
-    };
-
-    addWhatCanBeAddedToLevels();
-
-    const circular = this.resources.filter(
-      (resource) => !flatten(levels).includes(resource),
-    );
-
-    const tree = flatten(levels);
-
-    const nodes = new NodeStack();
-
-    circular.forEach((resource) => {
-      const name = resource.getUri();
-      nodes.addNode(name);
-
-      resource.getDependencies().forEach((dependency) => {
-        nodes.addEdge(name, dependency.getUri());
-      });
-    });
-
-    const graph = new GraphTraverser(nodes);
-
-    const circularDocumentation = graph
-      .getCycles()
-      .getNodeStacks()
-      .map((nodeStack) => nodeStack.getSortedNodes().join('->'));
-
-    return {
-      tree: tree.map((resource) => resource.getUri()),
-      circular: circular.map((resource) => resource.getUri()),
-      circularDocumentation,
-    };
   }
 
   /**

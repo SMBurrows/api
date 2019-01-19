@@ -1,0 +1,9 @@
+{
+  "name": "tijpetshopsedgie",
+  "uri": "pet-shop/stage/v1/aws/133713371337/eu-north-1/services/lambdas/add-pet/aws_iam_role_policy_attachment/cloud_watch_role_attachment",
+  "contentHash": "k86gv5",
+  "dependencies": [
+    "pet-shop/stage/v1/aws/133713371337/eu-north-1/services/lambdas/add-pet/aws_iam_role/pets",
+    "pet-shop/stage/v1/aws/133713371337/eu-north-1/services/lambdas/add-pet/aws_iam_policy/cloudwatch_attachable_policy"
+  ]
+}

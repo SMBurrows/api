@@ -1,0 +1,8 @@
+{
+  "name": "tijpetshop191gflg",
+  "uri": "pet-shop/stage/v1/aws/13371337/eu-north-1/services/lambdas/add-pet/aws_dynamodb_table/pets",
+  "contentHash": "1hfgqm",
+  "dependencies": [
+    "pet-shop/stage/v1/aws/13371337/eu-north-1/services/lambdas/add-pet/aws_iam_role/pets"
+  ]
+}

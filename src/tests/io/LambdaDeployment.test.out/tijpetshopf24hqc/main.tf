@@ -20,9 +20,9 @@ data "external" "save_latest_deploy" {
   ]
 
   program = [
-    "-c",
-    "bash",
-    "require('@tfinjs/helpers').saveDeploymentStatus('${path.root}', 'tijpetshopf24hqc')",
+    "node",
+    "-e",
+    "require('@tfinjs/api/utils').saveDeploymentStatus('${path.root}', 'tijpetshopf24hqc')",
   ]
 }
 
@@ -32,11 +32,11 @@ resource "aws_iam_policy" "cloudwatch_attachable_policy" {
 EOF
 
   provisioner "local-exec" {
-    command = "require('@tfinjs/helpers').saveDeploymentStatus('${path.root}', 'DESTROYED')"
+    command = "require('@tfinjs/api/utils').saveDeploymentStatus('${path.root}', 'DESTROYED')"
 
     interpreter = [
-      "-e",
       "node",
+      "-e",
     ]
 
     when = "destroy"

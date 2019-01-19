@@ -20,9 +20,9 @@ data "external" "save_latest_deploy" {
   ]
 
   program = [
-    "-c",
-    "bash",
-    "require('@tfinjs/helpers').saveDeploymentStatus('${path.root}', 'tijpetshop1r2h0yy')",
+    "node",
+    "-e",
+    "require('@tfinjs/api/utils').saveDeploymentStatus('${path.root}', 'tijpetshop1r2h0yy')",
   ]
 }
 
@@ -33,11 +33,11 @@ resource "aws_dynamodb_table" "pets" {
   memory_size   = 512
 
   provisioner "local-exec" {
-    command = "require('@tfinjs/helpers').saveDeploymentStatus('${path.root}', 'DESTROYED')"
+    command = "require('@tfinjs/api/utils').saveDeploymentStatus('${path.root}', 'DESTROYED')"
 
     interpreter = [
-      "-e",
       "node",
+      "-e",
     ]
 
     when = "destroy"

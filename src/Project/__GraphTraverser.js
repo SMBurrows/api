@@ -40,7 +40,7 @@ export class NodeStack {
     this.nodes = nodes;
   }
 
-  isCyclic = false;
+  cyclicNodes = [];
 
   addEdge(node1, node2) {
     this.nodes[node1].push(node2);
@@ -97,8 +97,14 @@ export class NodeStack {
     return has(this.nodes, node);
   }
 
-  setIsCyclic(val) {
-    this.isCyclic = !!val;
+  markCyclicNode(node) {
+    if (!this.cyclicNodes.includes(node)) {
+      this.cyclicNodes.push(node);
+    }
+  }
+
+  getCyclicNodes() {
+    return this.cyclicNodes;
   }
 }
 
@@ -111,18 +117,113 @@ class GraphTraverser {
     this.nodeStack = nodeStack;
   }
 
-  visited = {};
-
-  recursionStack = {};
-
   visitedStack = new NodeStack();
 
   cycleStacks = new NodeStackCollection();
 
+  getNonCyclicDependenciesOfNode(node) {
+    const adjacencyList = this.nodeStack.getAdjacencyList();
+    const dependencyLevels = [[node]];
+
+    const addToLevel = () => {
+      const dependencies = dependencyLevels[dependencyLevels.length - 1]
+        .reduce(
+          (nestedDeps, dependencyNode) => [
+            ...nestedDeps,
+            ...adjacencyList[dependencyNode].filter(
+              (a) => !nestedDeps.includes(a),
+            ),
+          ],
+          [],
+        )
+        .filter(
+          (dependencyNode) =>
+            !flatten(dependencyLevels).includes(dependencyNode),
+        );
+
+      if (dependencies.length) {
+        dependencyLevels.push(dependencies);
+        addToLevel();
+      }
+    };
+    addToLevel();
+    console.log(dependencyLevels);
+  }
+
+  getCyclicNodeStacks() {
+    const cycles = this.getCycles();
+    return cycles.getNodeStacks();
+  }
+
+  getCyclicNodes() {
+    const cyclicNodeStacks = this.getCyclicNodeStacks();
+
+    const cyclicNodes = flatten(
+      cyclicNodeStacks.map((nodeStack) => nodeStack.getCyclicNodes()),
+    );
+    return cyclicNodes;
+  }
+
+  getNonCyclicAdjacencyList() {
+    const cyclicNodes = this.getCyclicNodes();
+    const nonCyclicAdjacencyList = Object.entries(
+      this.nodeStack.getAdjacencyList(),
+    ).filter(
+      ([node, dependencies]) =>
+        !cyclicNodes.includes(node)
+        && dependencies.every(
+          (dependencyNode) => !cyclicNodes.includes(dependencyNode),
+        ),
+    );
+    return nonCyclicAdjacencyList;
+  }
+
+  getNonCyclicDependencies() {
+    const nonCyclicGraph = [];
+
+    const nonCyclicAdjacencyList = this.getNonCyclicAdjacencyList();
+
+    const withoutDependencies = nonCyclicAdjacencyList
+      .filter(([, dependencies]) => dependencies.length === 0)
+      .map(([node]) => node);
+
+    if (withoutDependencies.length > 0) {
+      nonCyclicGraph.push(withoutDependencies);
+    }
+
+    this.addWhatCanBeAddedToLevels({ nonCyclicAdjacencyList, nonCyclicGraph });
+
+    return nonCyclicGraph;
+  }
+
+  addWhatCanBeAddedToLevels({ nonCyclicAdjacencyList, nonCyclicGraph }) {
+    const dependencyLevel = nonCyclicAdjacencyList
+      .filter(
+        ([node, dependencies]) =>
+          !flatten(nonCyclicGraph).includes(node)
+          && dependencies.every((dependency) =>
+            flatten(nonCyclicGraph).includes(dependency)),
+      )
+      .map(([node]) => node);
+    if (dependencyLevel.length > 0) {
+      nonCyclicGraph.push(dependencyLevel);
+      this.addWhatCanBeAddedToLevels({
+        nonCyclicAdjacencyList,
+        nonCyclicGraph,
+      });
+    }
+  }
+
+  hasTraversed = false;
+
   getCycles() {
+    if (this.hasTraversed) {
+      return this.cycleStacks;
+    }
     this.nodeStack.getNodes().forEach((node) => {
       this.detectCycle(node);
     });
+    this.hasTraversed = true;
     return this.cycleStacks;
   }
 
@@ -140,7 +241,7 @@ class GraphTraverser {
     }
 
     if (recursionStack.hasNode(node)) {
-      recursionStack.setIsCyclic(true);
+      recursionStack.markCyclicNode(node);
       this.cycleStacks.addNodeStack(recursionStack);
       return recursionStack;
     }

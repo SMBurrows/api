@@ -20,9 +20,9 @@ data "external" "save_latest_deploy" {
   ]
 
   program = [
-    "-c",
-    "bash",
-    "require('@tfinjs/helpers').saveDeploymentStatus('${path.root}', 'tijpetshopsedgie')",
+    "node",
+    "-e",
+    "require('@tfinjs/api/utils').saveDeploymentStatus('${path.root}', 'tijpetshopsedgie')",
   ]
 }
 
@@ -30,11 +30,11 @@ resource "aws_iam_role_policy_attachment" "cloud_watch_role_attachment" {
   policy_arn = "${data.terraform_remote_state.tijpetshopf24hqc.tfinjs_arn}"
 
   provisioner "local-exec" {
-    command = "require('@tfinjs/helpers').saveDeploymentStatus('${path.root}', 'DESTROYED')"
+    command = "require('@tfinjs/api/utils').saveDeploymentStatus('${path.root}', 'DESTROYED')"
 
     interpreter = [
-      "-e",
       "node",
+      "-e",
     ]
 
     when = "destroy"
