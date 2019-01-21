@@ -167,9 +167,9 @@ class Project {
     return this.getResources().reduce(
       (nodes, resource) => ({
         ...nodes,
-        [resource.getUri()]: resource
+        [resource.versionedName()]: resource
           .getDependencies()
-          .map((dependencyResource) => dependencyResource.getUri()),
+          .map((dependencyResource) => dependencyResource.versionedName()),
       }),
       {},
     );
@@ -184,6 +184,19 @@ class Project {
    */
   getResourceFromUri(uri) {
     return this.resources.find((resource) => resource.getUri() === uri);
+  }
+
+  /**
+   * Gets a resource of the project based on its versioned name
+   *
+   * @param {string} uri
+   * @returns {resource} resource
+   * @memberof Project
+   */
+  getResourceFromVersionedName(versionedName) {
+    return this.resources.find(
+      (resource) => resource.versionedName() === versionedName,
+    );
   }
 }
 
