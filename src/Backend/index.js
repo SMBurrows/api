@@ -90,7 +90,7 @@ class Backend {
   create(deploymentConfig) {
     assert(
       deploymentConfig instanceof DeploymentConfig,
-      'deploymentConfig must be an instance of DeploymentConfig',
+      'deploymentConfig must be an instance of DeploymentConfig, in Backend.create',
     );
     const result = this.privateCreate(deploymentConfig);
     assert(

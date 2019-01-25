@@ -39,7 +39,7 @@ class Resource {
   ) {
     assert(
       deploymentConfig instanceof DeploymentConfig,
-      'deploymentConfig must be an instance of DeploymentConfig',
+      'deploymentConfig must be an instance of DeploymentConfigin Resource.constructor',
     );
     assert(typeof type === 'string', 'type must be string');
     assert(typeof name === 'string', 'name must be string');
