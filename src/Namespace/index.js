@@ -1,5 +1,6 @@
 import assert from 'assert';
-import Project from '../Project';
+import Project from '../Project/ProjectParent';
+import NamespaceParent from './NamespaceParent';
 
 /**
  * Creates an instance of Namespace.
@@ -8,8 +9,9 @@ import Project from '../Project';
  * @param {string} namespace - The namespace string
  * @class Namespace
  */
-class Namespace {
+class Namespace extends NamespaceParent {
   constructor(project, namespace) {
+    super();
     assert(project instanceof Project);
     assert(typeof namespace === 'string', 'namespace must be a string');
 

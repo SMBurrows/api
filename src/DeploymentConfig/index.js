@@ -1,6 +1,7 @@
 import assert from 'assert';
-import Namespace from '../Namespace';
+import Namespace from '../Namespace/NamespaceParent';
 import Provider from '../Provider';
+import DeploymentConfigParent from './DeploymentConfigParent';
 
 /**
  * Creates an instance of DeploymentConfig.
@@ -12,9 +13,13 @@ import Provider from '../Provider';
  * @param {provider} config.provider - And instance of the Provider class which defines to which tennant and location resources with this config should be deployed
  * @class DeploymentConfig
  */
-class DeploymentConfig {
+class DeploymentConfig extends DeploymentConfigParent {
   constructor(namespace, { environment, version, provider }) {
-    assert(namespace instanceof Namespace);
+    super();
+    assert(
+      namespace instanceof Namespace,
+      'namespace must be an instance of Namespace',
+    );
     assert(typeof environment === 'string', 'environment must be string');
     assert(typeof version === 'string', 'version must be string');
     assert(

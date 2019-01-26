@@ -1,6 +1,5 @@
 import fs from 'fs';
 import assert from 'assert';
-import flatten from 'lodash/flatten';
 import { isAbsolute } from 'path';
 import Backend from '../Backend';
 import requiredParam from '../statics/requiredParam';
@@ -8,6 +7,7 @@ import Resource from '../Resource';
 import resourceExistsInList from '../statics/resourceExistsInList';
 import DeploymentConfig from '../DeploymentConfig';
 import Namespace from '../Namespace';
+import ProjectParent from './ProjectParent';
 
 /**
  * Creates an instance of Project.
@@ -18,8 +18,9 @@ import Namespace from '../Namespace';
  * @param {*} [fileSystem=fs]
  * @class Project
  */
-class Project {
+class Project extends ProjectParent {
   constructor(project, backend, dist, fileSystem = fs) {
+    super();
     assert(typeof project === 'string', 'project must be a string');
     assert(backend instanceof Backend, 'backend must be instance of Backend');
 
